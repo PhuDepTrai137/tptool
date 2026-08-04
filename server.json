@@ -28,6 +28,20 @@ app.get("/checkkey", async (req, res) => {
             message: "Thiếu key hoặc device"
         });
     }
+
+    const { data, error } = await supabase
+        .from("keys")
+        .select("*")
+        .eq("key", key)
+        .single();
+
+    if (error || !data) {
+        return res.json({
+            status: "error",
+            message: "Key không tồn tại"
+        });
+    }
+
     const now = new Date();
 
     if (new Date(data.expire) < now) {
@@ -67,22 +81,9 @@ app.get("/checkkey", async (req, res) => {
         expire: data.expire,
         vip: data.vip
     });
-
 });
+
 
 app.listen(process.env.PORT || 3000, () => {
     console.log("TPTOOL API đang chạy...");
 });
-
-    const { data, error } = await supabase
-        .from("keys")
-        .select("*")
-        .eq("key", key)
-        .single();
-
-    if (error || !data) {
-        return res.json({
-            status: "error",
-            message: "Key không tồn tại"
-        });
-    }
