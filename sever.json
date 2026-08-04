@@ -1,1 +1,43 @@
+const express = require("express");
+const { createClient } = require("@supabase/supabase-js");
 
+const app = express();
+
+app.use(express.json());
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+);
+
+app.get("/", (req, res) => {
+    res.json({
+        status: "success",
+        message: "TPTOOL API Online"
+    });
+});
+
+app.get("/checkkey", async (req, res) => {
+
+    const key = req.query.key;
+    const device = req.query.device;
+
+    if (!key || !device) {
+        return res.json({
+            status: "error",
+            message: "Thiếu key hoặc device"
+        });
+    }
+
+    const { data, error } = await supabase
+        .from("keys")
+        .select("*")
+        .eq("key", key)
+        .single();
+
+    if (error || !data) {
+        return res.json({
+            status: "error",
+            message: "Key không tồn tại"
+        });
+    }
