@@ -28,6 +28,51 @@ app.get("/checkkey", async (req, res) => {
             message: "Thiếu key hoặc device"
         });
     }
+    const now = new Date();
+
+    if (new Date(data.expire) < now) {
+        return res.json({
+            status: "error",
+            message: "Key đã hết hạn"
+        });
+    }
+
+    if (!data.device || data.device === "") {
+
+        await supabase
+            .from("keys")
+            .update({
+                device: device
+            })
+            .eq("key", key);
+
+        return res.json({
+            status: "success",
+            message: "Kích hoạt thiết bị thành công",
+            expire: data.expire,
+            vip: data.vip
+        });
+    }
+
+    if (data.device !== device) {
+        return res.json({
+            status: "error",
+            message: "Key đã được dùng trên thiết bị khác"
+        });
+    }
+
+    return res.json({
+        status: "success",
+        message: "Key hợp lệ",
+        expire: data.expire,
+        vip: data.vip
+    });
+
+});
+
+app.listen(process.env.PORT || 3000, () => {
+    console.log("TPTOOL API đang chạy...");
+});
 
     const { data, error } = await supabase
         .from("keys")
